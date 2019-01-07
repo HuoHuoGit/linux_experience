@@ -1,0 +1,19 @@
+Linux kernel 找到gpio被占用位置
+一开始是通过断点 printk看哪里申请这个GPIO正常哪里不正常，发现这种方法太繁琐。
+经过同事提醒，直接在 drivers/gpio/gpiolib.c 里面的 gpio_request 里面添加调试代码，可以直接得出该GPIO 是在哪调用的。
+代码如下：
+    # drivers/gpio/gpiolib.c
+    int gpio_request(unsigned gpio, const char *label)
+    {
+        // ... ...
+         if(gpio == 29)
+         {
+            printk("-----here : %s ------\n", label);
+         }
+        // ... ...
+    }
+这样加入kernel 后就很容易在 LOG中找到大概的位置，找到是在哪被占用，为后续的自己的驱动以及文件系统层的调用提供保障。
+
+然后通过在用户层就可以直接控制该GPIO，可参考：http://www.cnblogs.com/chenfulin5/p/6274076.html
+
+kernel 4.4.12的调用接口是 devm_gpio_request gpio_direction_output

@@ -1,0 +1,10 @@
+$: git remote -v
+sim	ssh://zening.han@172.16.6.23:29418/Android-7.0-Repositories/L2/platform/vendor/qcom/thorium_32 (fetch)
+sim	ssh://zening.han@172.16.6.23:29418/Android-7.0-Repositories/L2/platform/vendor/qcom/thorium_32 (push)
+$: git status
+On branch l2gp
+Your branch is ahead of 'sim/SPF201620_27004' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+$: git push ssh://zening.han@172.16.6.23:29418/Android-7.0-Repositories/L2/platform/vendor/qcom/thorium_32 HEAD:refs/for/SPF201620_27004

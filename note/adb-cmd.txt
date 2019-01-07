@@ -1,0 +1,17 @@
+adb wait-for-device
+adb reboot edl
+adb shell input keyevent 26
+adb erase boot
+adb flash boot boot.img
+adb shell setenforce 0 关闭selinux
+setprop ro.build.project "L2"
+getprop ro.build.project
+
+如果remount不成功，使用下面命令重新root
+adb disable-verity
+adb kill-server
+adb reboot
+adb root
+adb remount
+
+cat /d/rpm_master_stats 查看各分区信息

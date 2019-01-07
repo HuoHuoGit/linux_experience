@@ -1,0 +1,2 @@
+修改XML后，push此文件到手机
+\\172.19.1.157\hzn\l2s\1130\AMSS\LA.UM.5.6\LINUX\android\out\target\product\msm8937_32\system\etc\camera\camera_config.xml

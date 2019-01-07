@@ -1,0 +1,2 @@
+git config --global user.name "zening.han"
+git config --global user.email "zening.han@sim.com"

@@ -1,0 +1,1 @@
+sudo mount  -t cifs  -o username=zjgy03,password=sim123 //172.19.1.122/ljj  /home/ljj/project/zgjy03

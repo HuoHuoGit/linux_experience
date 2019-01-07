@@ -1,0 +1,32 @@
+/*
+ * Call the console drivers, asking them to write out
+ * log_buf[start] to log_buf[end - 1].
+ * The console_lock must be held.
+ */
+static void call_console_drivers(int level, const char *text, size_t len)
+{
+	struct console *con;
+
+	trace_console(text, len);
+
+//comment this secession
+#if 0
+	if (level >= console_loglevel && !ignore_loglevel)
+		return;
+	if (!console_drivers)
+		return;
+#endif
+
+	for_each_console(con) {
+		if (exclusive_console && con != exclusive_console)
+			continue;
+		if (!(con->flags & CON_ENABLED))
+			continue;
+		if (!con->write)
+			continue;
+		if (!cpu_online(smp_processor_id()) &&
+		    !(con->flags & CON_ANYTIME))
+			continue;
+		con->write(con, text, len);
+	}
+}
