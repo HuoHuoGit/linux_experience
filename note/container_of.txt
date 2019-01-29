@@ -1,0 +1,14 @@
+inclue/linux/kernel.h
+#define container_of(ptr, type, member) ({				\
+	void *__mptr = (void *)(ptr);					\
+	BUILD_BUG_ON_MSG(!__same_type(*(ptr), ((type *)0)->member) &&	\
+			 !__same_type(*(ptr), void),			\
+			 "pointer type mismatch in container_of()");	\
+	((type *)(__mptr - offsetof(type, member))); })            //获取ptr所在的type类型的结构体
+
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER) //获取member的偏移地址
+
+用法：
+ptr为type类型结构成员变量的指针，member为ptr的成员变量名
+如果  ptr=&type.member
+则    &type == container_of(ptr, type, member);
