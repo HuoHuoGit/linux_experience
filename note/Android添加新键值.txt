@@ -1,0 +1,33 @@
+1.frameworks/base/data/keyboards/Generic.kl （键盘布局文件添加键值映射，这里的键值对应kernel里面的键值，按键名字对应上层keycodes.h里面定义的按键名字） 
+key 497 GESTURE_WAKELOCK
+
+2.frameworks/base/core/res/res/values/attrs.xml
+
+     <enum name="KEYCODE_GESTURE_WAKELOCK" value="267" 
+1
+3.frameworks\native\include\android\keycodes.h
+
+ AKEYCODE_GESTURE_WAKEUP       =267     
+1
+4.frameworks\native\include\input\InputEventLabels.h
+
+DEFINE_KEYCODE(GESTURE_WAKELOCK)    
+1
+5.frameworks/base/core/java/android/view/KeyEvent.java 
+（1）添加键值
+
+    public static final int KEYCODE_GESTURE_WAKELOCK = 267; 
+1
+（2）是否为系统按键或者唤醒功能按键
+
+    isSystemKey
+    isWakeKey
+1
+2
+6.frameworks/base/api/current.txt 
+frameworks/base/api/system-current.txt
+--------------------- 
+作者：这个ID洒家要了 
+来源：CSDN 
+原文：https://blog.csdn.net/u012719256/article/details/52526046 
+版权声明：本文为博主原创文章，转载请附上博文链接！
