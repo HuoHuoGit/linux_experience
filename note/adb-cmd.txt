@@ -15,3 +15,6 @@ adb root
 adb remount
 
 cat /d/rpm_master_stats 查看各分区信息
+
+QCOM使能关机充电
+fastboot oem enable-charger-screen
