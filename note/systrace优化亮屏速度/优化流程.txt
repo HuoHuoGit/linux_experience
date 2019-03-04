@@ -1,0 +1,39 @@
+QCOM KBA-161002045417
+Device wakeup time analysis and breakdown
+
+1. merge debug code to capture logs:
+a)enable kernel configs:
+CONFIG_PM_DEBUG=y
+CONFIG_PM_SLEEP_DEBUG=y
+b)enable initcall logging in device\qcom\msmxxx\BoardConfig.mk:
+BOARD_KERNEL_CMDLINE += initcall_debug log_buf_len=16M
+
+2.抓取systrace
+Follow the steps to capture wakeup logs:
+A. Connect device with usb cable
+B. prepare.bat
+C. start.bat
+D. Disconnect usb cable, press power to put device into sleep
+E. wait for some time > 10s, make sure device enters fully sleep state
+F. Press power key to wake device
+G. Connect device with usb and run ./stop.bat
+H. convert atrace.out into html: python systrace/systrace.py --from-file atrace.out (andorid 7.0 使用python2.7)
+   systrace.py位于android\external\chromium-trace，或者位于SDK中
+
+3.常见问题
+A. HWDevice::PowerOn时间太长，应该检查外设的resume代码中的延时
+    1)屏：需要检查点亮屏幕的时序，reset sequence中延时
+    2)TP： resume函数的延时
+    3）其他外设的resume中的延时
+        a. 运行2中A,B,C,D,E,F
+        b. adb shell dmesg抓取log
+        c. 可以看到如下log, 关键字calling 硬件地址（I2C地址或者寄存器地址），通过比较某个外设的唤醒时间增大来确定某个外设的resume时间太长
+            [  238.586667] calling  2-0018+ @ 1433, parent: i2c-2
+            [  238.586675] hsm_gpio_set 8 (gpio: 41, SCANNER_LEVEL_SHITF), value: 0
+            [  238.586685] hsm_gpio_set 9 (gpio: 45, SCANNER_LOAD_SWITCH), value: 0
+            [  238.586692] hsm_gpio_set 10 (gpio: 50, SCANNER_ILLUM_EN), value: 0
+            [  238.586700] hsm_gpio_set 7 (gpio: 48, SCANNER_POWER_SUPPLY), value: 0
+            [  238.686709] call 2-0018+ returned 0 after 97693 usecs 
+B. duration is long(Screen on blocked): need to check the UI drawing time of app. We can verifythis by change the timeout value from 1s to 1ms, should benefit the total wake up latency.
+//frameworks/base/services/core/java/com/android/server/policy/PhoneWindowManager.java
+static final int WAITING_FOR_DRAWN_TIMEOUT = 1
