@@ -1,0 +1,117 @@
+1.在电池参数的dts文件中配置battery ID的电阻大小，同一组电池参数可以配置多个不同的电阻
+    example： L2
+    batterydata-l2-4v35-5000mah.dtsi
+    配置两个不同电阻10K和5K：qcom,batt-id-kohm = <10 5>;
+
+2.设置电阻误差
+    修改电阻误差的百分比：qcom,batt-id-range-pct = <20>;
+
+3.代码部分
+    a. driver/power/qpnp-fg.c中调用of_batterydata_get_best_profile()获取匹配的电池参数
+    b. of_batterydata_get_best_profile位于driver/of/of_batterydata.c，通过实际测量的battery ID电阻和dts中配置的battery ID电阻进行匹配获取电池参数
+    struct device_node *of_batterydata_get_best_profile(
+		const struct device_node *batterydata_container_node,
+		const char *psy_name,  const char  *batt_type)
+	{
+		struct batt_ids batt_ids;
+		struct device_node *node, *best_node = NULL;
+		struct power_supply *psy;
+		const char *battery_type = NULL;
+		union power_supply_propval ret = {0, };
+		int delta = 0, best_delta = 0, best_id_kohm = 0, id_range_pct,
+			batt_id_kohm = 0, i = 0, rc = 0, limit = 0;
+		bool in_range = false;
+
+		psy = power_supply_get_by_name(psy_name);
+		if (!psy) {
+			pr_err("%s supply not found. defer\n", psy_name);
+			return ERR_PTR(-EPROBE_DEFER);
+		}
+
+		rc = psy->get_property(psy, POWER_SUPPLY_PROP_RESISTANCE_ID, &ret);
+		if (rc) {
+			pr_err("failed to retrieve resistance value rc=%d\n", rc);
+			return ERR_PTR(-ENOSYS);
+		}
+
+		batt_id_kohm = ret.intval / 1000;//ger real battey ID resistance
+
+		/* read battery id range percentage for best profile */
+		rc = of_property_read_u32(batterydata_container_node,
+				"qcom,batt-id-range-pct", &id_range_pct);
+
+		if (rc) {
+			if (rc == -EINVAL) {
+				id_range_pct = 0;
+			} else {
+				pr_err("failed to read battery id range\n");
+				return ERR_PTR(-ENXIO);
+			}
+		}
+
+		/*
+		 * Find the battery data with a battery id resistor closest to this one
+		 */
+		//compare real battery ID with DTS battery ID
+		pr_err("hanzening batt_id_kohm = %d id_range_pct = %d\n", batt_id_kohm, id_range_pct);
+		for_each_child_of_node(batterydata_container_node, node) {
+			if (batt_type != NULL) {
+				pr_err("hanzening get qcom,battery-type\n");
+				rc = of_property_read_string(node, "qcom,battery-type",
+								&battery_type);
+				if (!rc && strcmp(battery_type, batt_type) == 0) {
+					best_node = node;
+					best_id_kohm = batt_id_kohm;
+					break;
+				}
+			} else {
+				pr_err("hanzening get qcom,batt-id-kohm\n");
+				rc = of_batterydata_read_batt_id_kohm(node,
+								"qcom,batt-id-kohm",
+								&batt_ids);
+				if (rc)
+					continue;
+				for (i = 0; i < batt_ids.num; i++) {
+					delta = abs(batt_ids.kohm[i] - batt_id_kohm);
+					limit = (batt_ids.kohm[i] * id_range_pct) / 100;
+					in_range = (delta <= limit);
+					pr_err("hanzening delta = %d limit = %d in_range = %d batt_ids.kohm[%d] = %d id_range_pct = %d\n", delta, limit, in_range, i, batt_ids.kohm[i], id_range_pct);
+					/*
+					 * Check if the delta is the lowest one
+					 * and also if the limits are in range
+					 * before selecting the best node.
+					 */
+					if ((delta < best_delta || !best_node)
+						&& in_range) {
+						best_node = node;
+						best_delta = delta;
+						best_id_kohm = batt_ids.kohm[i];
+					}
+				}
+			}
+		}
+
+		if (best_node == NULL) {
+			pr_err("No battery data found 1\n");
+			return best_node;
+		}
+
+		/* check that profile id is in range of the measured batt_id */
+		if (abs(best_id_kohm - batt_id_kohm) >
+				((best_id_kohm * id_range_pct) / 100)) {
+			pr_err("out of range: profile id %d batt id %d pct %d",
+				best_id_kohm, batt_id_kohm, id_range_pct);
+			return NULL;
+		} else {
+			pr_err("hanzening find batt id, best_id_kohm = %d batt_id_kohm = %d\n", best_id_kohm, batt_id_kohm);
+		}
+
+		rc = of_property_read_string(best_node, "qcom,battery-type",
+								&battery_type);
+		if (!rc)
+			pr_info("%s found\n", battery_type);
+		else
+			pr_info("%s found\n", best_node->name);
+
+		return best_node;
+	}
