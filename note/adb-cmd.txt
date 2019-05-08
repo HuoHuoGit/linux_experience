@@ -18,3 +18,14 @@ cat /d/rpm_master_stats 查看各分区信息
 
 QCOM使能关机充电
 fastboot oem enable-charger-screen
+
+thermal
+Qcom关闭：stop thermal-engine
+Qcom打开：start thermal-engine
+串口log中可以看出thermal关闭和开启的相关信息
+
+查看GPIO状态
+cat /sys/kernel/debug/gpio
+
+查看tp报点率
+adb shell getevent -ltr /dev/input/event0
