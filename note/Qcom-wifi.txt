@@ -1,0 +1,6 @@
+1.开启wifi热点时耗流过大
+	device/qcom/msm8937_32/WCNSS_qcom_cfg.ini
+	需要关闭
+	#Enable OBSS protection
+	-gEnableApOBSSProt=1
+	+gEnableApOBSSProt=0
