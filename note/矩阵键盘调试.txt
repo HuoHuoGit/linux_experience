@@ -1,4 +1,4 @@
-1.添加宏
+1.添加宏CONFIG_KEYBOARD_MATRIX=y
 2.上报键值和案件的对应关系：android/frameworks/base/data/keyboards/Generic.kl
 3.配置dts规则如下：
 Documentation/devicetree/bindings/input/matrix-keymap.txt
