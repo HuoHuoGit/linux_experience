@@ -1,20 +1,21 @@
 一.配置MIPI
 1. <ComboMode>0</ComboMode>：lane1为clock，lane0，2，3，4为data
-    <LaneAssign>0x4320</LaneAssign>： 	CPU lane0对应sensor data lane 0，默认lane 1作为clock不用配置
-									CPU lane2对应sensor data lane 1
-									CPU lane3对应sensor data lane 2
-									CPU lane4对应sensor data lane 3
+    <LaneAssign>0x4320</LaneAssign>：    CPU lane数据通道和sensor lane数据通道的映射关系，clock lane用体现
+                                         CPU lane0对应sensor data lane 0，默认lane 1作为clock不用配置
+									     CPU lane2对应sensor data lane 1
+									     CPU lane3对应sensor data lane 2
+									     CPU lane4对应sensor data lane 3
 
 2. <ComboMode>1</ComboMode>：lane 1为camera 1的clock， lane 4为camera 2的clock
     a. camera 1配置：
         <LaneAssign>0x0020</LaneAssign>:    camera 1使用lane 0， 2作为data，默认lane 1作为clock不用配置
 									        CPU lane0对应sensor data lane 0
 									        CPU lane2对应sensor data lane 1
-        <LaneMask>0x3</LaneMask>： 	使能lane 0，1，2
+        <LaneMask>0x7</LaneMask>： 	使能lane 0，1，2，lane1为clock，掩码位必须为1使能lane1
     b. camera 2配置：
         <LaneAssign>0x0003</LaneAssign>：    camera 2使用lane 3作为data，默认lane 4作为clock不用配置
 									         CPU lane3对应sensor data lane 0
-        <LaneMask>0x18</LaneMask>： 	使能lane 3，4
+        <LaneMask>0x18</LaneMask>： 	使能lane 3，4，lane4为clock，掩码位必须为1使能lane4
 
         <LaneAssign>定义
             15:12 MSM 侧 PHY 通道编号，连接传感器的数据通道 3
