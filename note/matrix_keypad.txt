@@ -1,0 +1,82 @@
+一、注意事项
+1.linux,wakeup导致耗流增加
+如果有GPIO没有MPM interrupt功能且设置了可以唤醒系统(enable_irq_wake)，则会导致系统的休眠耗流增加，系统会放弃休眠而保证GPIO唤醒系统的功能
+代码中会对row的GPIO进行中断设置，如果设置了键盘可以唤醒系统则需要row行的GPIO全为有MPM中断功能的GPIO
+二、配置步骤
+1.添加宏CONFIG_KEYBOARD_MATRIX=y
+2.上报键值和案件的对应关系：android/frameworks/base/data/keyboards/Generic.kl
+3.配置dts规则如下：
+Documentation/devicetree/bindings/input/matrix-keymap.txt
+Documentation/devicetree/bindings/input/gpio-matrix-keypad.txt
+Required Properties:
+- compatible:		Should be "gpio-matrix-keypad"
+- row-gpios:		List of gpios used as row lines. The gpio specifier
+			for this property depends on the gpio controller to
+			which these row lines are connected.
+- col-gpios:		List of gpios used as column lines. The gpio specifier
+			for this property depends on the gpio controller to
+			which these column lines are connected.
+- linux,keymap: an array of packed 1-cell entries containing the equivalent
+of row, column and linux key-code. The 32-bit big endian cell is packed
+as:
+row << 24 | column << 16 | key-code
+
+Optional Properties:
+- linux,no-autorepeat:	do no enable autorepeat feature.
+- linux,wakeup:		use any event on keypad as wakeup event.
+- debounce-delay-ms:	debounce interval in milliseconds
+- col-scan-delay-us:	delay, measured in microseconds, that is needed
+			before we can scan keypad after activating column gpio
+- keypad,num-rows: Number of row lines connected to the keypad controller.
+- keypad,num-columns: Number of column lines connected to the keypad
+controller.
+
+dts示例：
+&soc {
+    matrix-keypad {
+        compatible = "gpio-matrix-keypad";
+        debounce-delay-ms = <25>;
+        col-scan-delay-us = <500>;
+        linux,wakeup;//设置按键可以唤醒系统
+        pinctrl-names = "default";
+        pinctrl-0 = <&gpio_keyboard_default>;
+        
+        col-gpios = <&tlmm 127 0x0
+                 &tlmm 61 0x0
+                 &tlmm 81 0x0
+                 &tlmm 93 0x0>;
+
+        row-gpios = <&tlmm 12 0x0
+                 &tlmm 94 0x0
+                 &tlmm 95 0x0
+                 &tlmm 98 0x0
+                 &tlmm 96 0x0>;
+    
+        linux,keymap = <
+                0x0000001C /* ENTER */
+                0x00010034 /* PERIOD */
+                0x0002000B /* 0 */
+                0x00030039 /* SPACE */
+                
+                0x0100004E /* + */
+                0x0101000A /* 9 */
+                0x01020009 /* 8 */
+                0x01030008 /* 7 */       
+                
+                0x0200000E /* DEL */      
+                0x02010007 /* 6 */      
+                0x02020006 /* 5 */      
+                0x02030005 /* 4 */       
+                
+                0x030001D0 /* Fn */
+                0x03010004 /* 3 */
+                0x03020003 /* 2 */
+                0x03030002 /* 1 */
+
+                0x040000B1 /* PAGE_UP */
+                0x040100E0 /* SCAN */
+                0x040200B2 /* PAGE_DOWN */
+                0x0403000F /* TAB */
+                >;
+    };
+};
