@@ -51,3 +51,5 @@ sensor_def_qcomdev.conf文件格式如下：
 3.PMU gpio问题
 a)不能控制PMU的gpio，需要在TZ中修改gpio的控制权限/AMSS/TZ.BF.4.0.5/trustzone_images/core/systemdrivers/pmic/config/msm8937_pm8950/src/pm_spmi_config.c
 b)gpio输出的电平可以调节，qcom,vin-sel = <3>;修改不同的值对应不同的电压
+
+3.GPIO默认配置为复用功能的配置位于：android/kernel/msm-3.18/drivers/pinctrl/qcom/pinctrl-msm8917.c
